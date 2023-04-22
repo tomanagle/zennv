@@ -3,6 +3,7 @@ import { z } from 'zod';
 export type Zennv<S> = {
   dotenv: boolean;
   schema: S;
+  data?: Record<string, any>;
 };
 
 const cast = {
@@ -18,18 +19,21 @@ function set(obj, prop, value) {
   return (obj[prop] = value);
 }
 
-export const main = <S extends z.AnyZodObject>(
-  options: Zennv<S>
-): z.infer<S> => {
-  const dotenv = require('dotenv');
+export const main = <S extends z.AnyZodObject>({
+  dotenv = true,
+  schema,
+  data,
+}: Zennv<S>): z.infer<S> => {
+  const processEnv = data || (process.env as Record<keyof z.infer<S>, string>);
 
-  dotenv.config();
+  if (dotenv) {
+    const dotenv = require('dotenv');
+    dotenv.config();
+  }
 
-  const shape = options.schema.shape;
+  const shape = schema.shape;
 
   const keys = Object.keys(shape) as (keyof z.infer<S>)[];
-
-  const processEnv = process.env as Record<keyof z.infer<S>, string>;
 
   const envKeys = Object.keys(processEnv) as (keyof z.infer<S>)[];
 
@@ -41,7 +45,7 @@ export const main = <S extends z.AnyZodObject>(
     }
   }
 
-  const env = (options.schema as z.AnyZodObject).safeParse(result);
+  const env = (schema as z.AnyZodObject).safeParse(result);
 
   if (env.success) {
     return env.data;
@@ -68,7 +72,7 @@ export const main = <S extends z.AnyZodObject>(
     }
   }
 
-  return (options.schema as z.AnyZodObject).parse(result);
+  return (schema as z.AnyZodObject).parse(result);
 };
 
 export default main;

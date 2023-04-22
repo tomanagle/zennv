@@ -30,7 +30,7 @@
     "singleQuote": true,
     "trailingComma": "es5"
   },
-  "name": "zenv",
+  "name": "zennv",
   "author": "Tom Nagle",
   "module": "dist/zenv.esm.js",
   "size-limit": [
@@ -54,5 +54,23 @@
   "dependencies": {
     "dotenv": "^16.0.3",
     "zod": "^3.21.4"
-  }
+  },
+  "description": "Parses environment variables using a Zod schema for type and runtime validation",
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tomanagle/zennv.git"
+  },
+  "keywords": [
+    "zod",
+    "env",
+    "dotenv"
+  ],
+  "bugs": {
+    "url": "https://github.com/tomanagle/zennv/issues"
+  },
+  "homepage": "https://github.com/tomanagle/zennv#readme"
 }
+

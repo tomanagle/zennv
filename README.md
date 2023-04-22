@@ -46,3 +46,10 @@ const env = zennv({
 ```ts
 const { PORT, HOST, IS_DEV, IS_DEFAULT_TRUE, IS_DEFAULT_FALSE, IS_OPTIONAL } = env;
 ```
+
+## Options
+| Name   | Default     | Description                                         | Required |
+|--------|-------------|-----------------------------------------------------|----------|
+| dotenv | true        | Uses dotenv to load your schema from process.env    | No       |
+| schema |             | Zod schema to parse your environment variables with | Yes      |
+| data   | process.env | An object to use instead of process.env             | No       |
