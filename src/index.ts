@@ -24,7 +24,7 @@ export const main = <S extends z.AnyZodObject>({
   schema,
   data,
 }: Zennv<S>): z.infer<S> => {
-  const processEnv = data || (process.env as Record<keyof z.infer<S>, string>);
+  const processEnv = (data || process.env) as Record<keyof z.infer<S>, string>;
 
   if (dotenv) {
     const dotenv = require('dotenv');
