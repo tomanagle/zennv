@@ -13,7 +13,7 @@
   "scripts": {
     "start": "tsdx watch",
     "build": "tsdx build",
-    "test": "tsdx test",
+    "test": "vitest",
     "lint": "tsdx lint",
     "prepare": "tsdx build",
     "size": "size-limit",
@@ -45,6 +45,7 @@
   ],
   "devDependencies": {
     "@size-limit/preset-small-lib": "^8.2.4",
+    "@types/node": "^22.15.21",
     "husky": "^8.0.3",
     "size-limit": "^8.2.4",
     "tsdx": "^0.14.1",
@@ -53,6 +54,7 @@
   },
   "dependencies": {
     "dotenv": "^16.0.3",
+    "vitest": "^3.1.4",
     "zod": "^3.21.4"
   },
   "description": "Parses environment variables using a Zod schema for type and runtime validation",

@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
-export type Zennv<S> = {
+export type Zennv<S extends z.AnyZodObject> = {
   dotenv: boolean;
   schema: S;
-  data?: Record<string, any>;
+  overrides?: Partial<z.infer<S>>;
 };
 
 const cast = {
@@ -22,14 +22,14 @@ function set(obj, prop, value) {
 export const main = <S extends z.AnyZodObject>({
   dotenv = true,
   schema,
-  data,
+  overrides,
 }: Zennv<S>): z.infer<S> => {
-  const processEnv = (data || process.env) as Record<keyof z.infer<S>, string>;
-
   if (dotenv) {
     const dotenv = require('dotenv');
     dotenv.config();
   }
+
+  const processEnv = process.env as Record<keyof z.infer<S>, string>;
 
   const shape = schema.shape;
 
@@ -41,7 +41,11 @@ export const main = <S extends z.AnyZodObject>({
 
   for (const key of envKeys) {
     if (keys.includes(key)) {
-      result[key] = processEnv[key];
+      if (overrides?.[key]) {
+        result[key] = overrides[key];
+      } else {
+        result[key] = processEnv[key];
+      }
     }
   }
 
