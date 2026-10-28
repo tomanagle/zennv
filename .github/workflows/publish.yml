@@ -7,13 +7,12 @@ on:
 
 permissions:
   contents: write # create the GitHub release
-  id-token: write # npm trusted publishing (OIDC) + provenance
+  id-token: write # provenance attestation
 
 jobs:
   publish:
     name: Publish to npm
     runs-on: ubuntu-latest
-    environment: npm
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -30,10 +29,6 @@ jobs:
           node-version: 22
           cache: pnpm
           registry-url: https://registry.npmjs.org
-
-      # Trusted publishing requires npm >= 11.5.1
-      - name: Update npm
-        run: npm install -g npm@latest
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -70,6 +65,8 @@ jobs:
       - name: Publish
         if: steps.published.outputs.skip == 'false'
         run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub release
         run: gh release create "$GITHUB_REF_NAME" --generate-notes
