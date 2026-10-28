@@ -56,7 +56,7 @@ const { PORT, HOST, IS_DEV, IS_DEFAULT_TRUE, IS_DEFAULT_FALSE, IS_OPTIONAL } = e
 | schema |             | Zod schema to parse your environment variables with | Yes      |
 | data   | process.env | An object to use instead of process.env             | No       |
 ## Releasing
-Releases are published to npm by GitHub Actions whenever a `v*` tag is pushed. The tag must match the version in `package.json`. The workflow authenticates with an npm granular access token stored in the `NPM_TOKEN` repository secret.
+Releases are published to npm by GitHub Actions via [npm trusted publishing](https://docs.npmjs.com/trusted-publishers) whenever a `v*` tag is pushed. The tag must match the version in `package.json`. No npm token is needed; the `zennv` package on npmjs.com trusts the `publish.yml` workflow in this repository.
 
 ```bash
 npm version <major|minor|patch>
