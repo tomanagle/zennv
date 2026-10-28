@@ -1,6 +1,7 @@
 import { z } from 'zod';
+import { config as loadDotenv } from 'dotenv';
 
-export type Zennv<S extends z.AnyZodObject> = {
+export type Zennv<S extends z.ZodObject> = {
   dotenv: boolean;
   schema: S;
   overrides?: Partial<z.infer<S>>;
@@ -14,69 +15,54 @@ const cast = {
   undefined_to_boolean: (value: string) => value === 'true',
 };
 
-// @ts-ignore
-function set(obj, prop, value) {
-  return (obj[prop] = value);
-}
-
-export const main = <S extends z.AnyZodObject>({
+export const main = <S extends z.ZodObject>({
   dotenv = true,
   schema,
   overrides,
 }: Zennv<S>): z.infer<S> => {
   if (dotenv) {
-    const dotenv = require('dotenv');
-    dotenv.config();
+    loadDotenv();
   }
 
-  const processEnv = process.env as Record<keyof z.infer<S>, string>;
+  const processEnv = process.env as Record<string, string | undefined>;
 
-  const shape = schema.shape;
+  const keys = Object.keys(schema.shape);
 
-  const keys = Object.keys(shape) as (keyof z.infer<S>)[];
+  const result: Record<string, unknown> = {};
 
-  const envKeys = Object.keys(processEnv) as (keyof z.infer<S>)[];
+  for (const key of keys) {
+    if (!(key in processEnv)) continue;
 
-  const result = {} as Record<keyof z.infer<S>, any>;
+    const override = overrides?.[key as keyof z.infer<S>];
 
-  for (const key of envKeys) {
-    if (keys.includes(key)) {
-      if (overrides?.[key]) {
-        result[key] = overrides[key];
-      } else {
-        result[key] = processEnv[key];
-      }
-    }
+    result[key] = override !== undefined ? override : processEnv[key];
   }
 
-  const env = (schema as z.AnyZodObject).safeParse(result);
+  const env = schema.safeParse(result);
 
   if (env.success) {
-    return env.data;
+    return env.data as z.infer<S>;
   }
 
-  const errors = env.error;
+  for (const issue of env.error.issues) {
+    const path = String(issue.path[0]);
 
-  for (const error of errors.errors) {
-    const path = error.path[0];
-
-    if (error.code === 'invalid_type') {
-      const fnPath = `${error.received}_to_${error.expected}` as keyof typeof cast;
+    if (issue.code === 'invalid_type') {
+      const received = typeof result[path];
+      const fnPath = `${received}_to_${issue.expected}` as keyof typeof cast;
 
       const fn = cast[fnPath];
 
       if (!fn) {
-        console.error(error);
+        console.error(issue);
         throw new Error(`No cast function for ${fnPath} - ${path}`);
       }
 
-      const value = fn(result[path]);
-
-      set(result, path, value);
+      result[path] = fn(result[path] as string);
     }
   }
 
-  return (schema as z.AnyZodObject).parse(result);
+  return schema.parse(result) as z.infer<S>;
 };
 
 export default main;

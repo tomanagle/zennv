@@ -2,27 +2,21 @@
   "version": "0.2.0",
   "license": "MIT",
   "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
   "files": [
     "dist",
     "src"
   ],
   "engines": {
-    "node": ">=10"
+    "node": ">=18"
   },
   "scripts": {
-    "start": "tsdx watch",
-    "build": "tsdx build",
+    "start": "tsup --watch",
+    "build": "tsup",
     "test": "vitest",
-    "lint": "tsdx lint",
-    "prepare": "tsdx build",
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "prepare": "tsup",
     "size": "size-limit",
     "analyze": "size-limit --why"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "tsdx lint"
-    }
   },
   "prettier": {
     "printWidth": 80,
@@ -32,30 +26,37 @@
   },
   "name": "zennv",
   "author": "Tom Nagle",
-  "module": "dist/zenv.esm.js",
+  "module": "dist/index.mjs",
   "size-limit": [
     {
-      "path": "dist/zenv.cjs.production.min.js",
-      "limit": "10 KB"
+      "path": "dist/index.js",
+      "limit": "10 KB",
+      "ignore": [
+        "dotenv",
+        "zod"
+      ]
     },
     {
-      "path": "dist/zenv.esm.js",
-      "limit": "10 KB"
+      "path": "dist/index.mjs",
+      "limit": "10 KB",
+      "ignore": [
+        "dotenv",
+        "zod"
+      ]
     }
   ],
   "devDependencies": {
     "@size-limit/preset-small-lib": "^8.2.4",
     "@types/node": "^22.15.21",
-    "husky": "^8.0.3",
     "size-limit": "^8.2.4",
-    "tsdx": "^0.14.1",
     "tslib": "^2.5.0",
-    "typescript": "^3.9.10"
+    "tsup": "^9.0.0",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.5",
+    "zod": "^4.6.7"
   },
   "dependencies": {
-    "dotenv": "^16.0.3",
-    "vitest": "^3.1.4",
-    "zod": "^3.21.4"
+    "dotenv": "^16.0.3"
   },
   "description": "Parses environment variables using a Zod schema for type and runtime validation",
   "directories": {
@@ -73,5 +74,16 @@
   "bugs": {
     "url": "https://github.com/tomanagle/zennv/issues"
   },
-  "homepage": "https://github.com/tomanagle/zennv#readme"
+  "homepage": "https://github.com/tomanagle/zennv#readme",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "peerDependencies": {
+    "zod": "^4.0.0"
+  }
 }

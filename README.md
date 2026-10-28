@@ -6,16 +6,18 @@ Parses environment variables using a Zod schema for type and runtime validation
 
 ## Getting started
 ### Install the package
+`zod` (v4 or later) is a peer dependency, so install it alongside `zennv`.
+
 ```bash
-yarn add zennv
+yarn add zennv zod
 ```
 
 ```bash
-pnpm add zennv
+pnpm add zennv zod
 ```
 
 ```bash
-npm i zennv
+npm i zennv zod
 ```
 
 ### Define a Zod schema
