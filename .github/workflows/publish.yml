@@ -17,25 +17,20 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          version: 10
-          run_install: false
+          bun-version: latest
 
+      # npm is still used for the publish step: trusted publishing needs npm >= 11.5.1
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: pnpm
+          node-version: 24
           registry-url: https://registry.npmjs.org
 
-      # Trusted publishing requires npm >= 11.5.1
-      - name: Update npm
-        run: npm install -g npm@latest
-
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Check tag matches package.json version
         run: |
@@ -46,13 +41,13 @@ jobs:
           fi
 
       - name: Lint
-        run: pnpm lint
+        run: bun run lint
 
       - name: Test
-        run: pnpm test -- --run
+        run: bun run test --run
 
       - name: Build
-        run: pnpm build
+        run: bun run build
 
       - name: Check whether this version is already on npm
         id: published

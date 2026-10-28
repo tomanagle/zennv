@@ -20,6 +20,10 @@ pnpm add zennv zod
 npm i zennv zod
 ```
 
+```bash
+bun add zennv zod
+```
+
 ### Define a Zod schema
 ```ts
 import z from 'zod';
