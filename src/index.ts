@@ -2,40 +2,47 @@ import { z } from 'zod';
 import { config as loadDotenv } from 'dotenv';
 
 export type Zennv<S extends z.ZodObject> = {
-  dotenv: boolean;
+  /** Load a `.env` file into `process.env` before parsing. Defaults to true. */
+  dotenv?: boolean;
+  /** Zod object schema describing the environment variables. */
   schema: S;
+  /** Source of raw values. Defaults to `process.env`. */
+  data?: Record<string, string | undefined>;
+  /** Already-typed values that take precedence over `data`. */
   overrides?: Partial<z.infer<S>>;
 };
 
-const cast = {
-  string_to_number: (value: string) => Number(value),
-  string_to_boolean: (value: string) => value === 'true',
-  undefined_to_string: (value: string) => value,
-  undefined_to_number: (value: string) => Number(value),
-  undefined_to_boolean: (value: string) => value === 'true',
+const cast: Record<string, (value: string) => unknown> = {
+  number: (value) => Number(value),
+  boolean: (value) => {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value;
+  },
 };
 
 export const main = <S extends z.ZodObject>({
   dotenv = true,
   schema,
+  data,
   overrides,
 }: Zennv<S>): z.infer<S> => {
   if (dotenv) {
     loadDotenv();
   }
 
-  const processEnv = process.env as Record<string, string | undefined>;
-
-  const keys = Object.keys(schema.shape);
+  const source = data ?? process.env;
 
   const result: Record<string, unknown> = {};
 
-  for (const key of keys) {
-    if (!(key in processEnv)) continue;
-
+  for (const key of Object.keys(schema.shape)) {
     const override = overrides?.[key as keyof z.infer<S>];
 
-    result[key] = override !== undefined ? override : processEnv[key];
+    if (override !== undefined) {
+      result[key] = override;
+    } else if (source[key] !== undefined) {
+      result[key] = source[key];
+    }
   }
 
   const env = schema.safeParse(result);
@@ -45,20 +52,17 @@ export const main = <S extends z.ZodObject>({
   }
 
   for (const issue of env.error.issues) {
-    const path = String(issue.path[0]);
+    if (issue.code !== 'invalid_type') continue;
 
-    if (issue.code === 'invalid_type') {
-      const received = typeof result[path];
-      const fnPath = `${received}_to_${issue.expected}` as keyof typeof cast;
+    const key = String(issue.path[0]);
+    const value = result[key];
 
-      const fn = cast[fnPath];
+    if (typeof value !== 'string') continue;
 
-      if (!fn) {
-        console.error(issue);
-        throw new Error(`No cast function for ${fnPath} - ${path}`);
-      }
+    const fn = cast[issue.expected];
 
-      result[path] = fn(result[path] as string);
+    if (fn) {
+      result[key] = fn(value);
     }
   }
 
